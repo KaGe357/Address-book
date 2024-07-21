@@ -13,7 +13,7 @@ using namespace std;
 struct Contact
 {
     int id;
-    int belongsTo; // ID uzytkownika do którego nalezy kontakt
+    int belongsTo; // ID uzytkownika do ktÃ³rego nalezy kontakt
     string name, lastName, phoneNum, email, homeAdress;
 };
 
@@ -702,10 +702,6 @@ int checkUserIdFromFile(vector<Contact>contacts, string line)
 }
 void loadFile(vector<Contact> &contacts, int loggedId)
 {
-
-    /* DOPISANA ZMIANA ZEBY RESZTE LINII WCZYTYWALO TYLKO JESLI ID ZALOGOWANEGO UZYTKOWNIKA ZGADZA SIE Z ID W PLIKU */
-    /* POPRAWIC FUNKCJE GLOWNA ZEBY NAJPIERW BYLO LOGOWANIE A POTEM DOPIERO LADOWANIE PLIKU */
-
     fstream file;
     file.open("kontakty.txt", ios::in);
     Contact contact;
