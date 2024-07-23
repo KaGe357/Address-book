@@ -31,6 +31,11 @@ void addNewContact(vector<Contact> &contacts, int loggedId);
 void loadFile(vector<Contact> &contacts, int loggedId);
 void printAllContacts(vector<Contact> contacts, int loggedId);
 void searchByName(vector<Contact> contacts);
+void addNewContact(vector<Contact> &contacts);
+void loadFile(vector<Contact> &contacts);
+void printAllContacts(vector<Contact> contacts);
+void searchByName(vector<Contact> contacts);
+void application();
 int searchMenu();
 void searchByLastName(vector<Contact> contacts, string lastNameToFind);
 void searchByName(vector<Contact> contacts, string nameToFind);
@@ -339,6 +344,138 @@ int loginMenuAndApp(vector<User>&users)
 
             }
             else if(option=='9')
+
+
+int main()
+{  int loggedId=0;
+    vector<User> users;
+    loggedId=loginMenuAndApp(users);
+        fstream file;
+    Contact contact;
+    vector<Contact> contacts;
+    loadFile(contacts);
+    string nameToFind, lastNameToFind;
+        while (loggedId!=0)
+        {
+            system("cls");
+            cout << " ________________________________" << endl;
+            cout << "|" << "    >>> KSIAZKA ADRESOWA <<<"
+                 << "    |" << endl;
+            cout << "|" << " 1. Dodaj nowa osobe."
+                 << "           |" << endl;
+            cout << "| 2. Wyszukaj po imieniu."
+                 << "        |" << endl;
+            cout << "| 3. Wyszukaj po nazwisku."
+                 << "       |" << endl;
+            cout << "| 4. Wyswietl wszystkie kontakty."
+                 << "|"
+                 << endl;
+            cout << "| 5. Usun adresata.              |" << endl;
+            cout << "| 6. Edytuj adresata.            |" << endl;
+            cout << "| 7. Zmien haslo.                |" <<endl;
+            cout << "| 8. Wyloguj sie.                |" <<endl;
+            cout << "| 9. Zamknij program."
+                 << "            |" << endl;
+            cout << "|________________________________|" << endl;
+            char option;
+            cin >> option;
+            cin.sync();
+
+            if (option == '1')
+            {
+                addNewContact(contacts);
+
+                Sleep(1000);
+                system("cls");
+                cout << "Kontakt dodany.";
+                Sleep(2000);
+            }
+
+            if (option == '2')
+            {
+                system("cls");
+                cout << "Wpisz szukane imie: ";
+                cin >> nameToFind;
+                cout << endl;
+                searchByName(contacts, nameToFind);
+                searchMenu();
+            }
+
+            if (option == '3')
+            {
+                system("cls");
+                cout << "Wpisz szukane nazwisko: ";
+                cin >> lastNameToFind;
+                cout << endl;
+                searchByLastName(contacts, lastNameToFind);
+                searchMenu();
+            }
+
+            if (option == '4')
+            {
+                system("cls");
+                printAllContacts(contacts);
+                cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz" <<endl;
+
+                system("pause");
+            }
+
+            if (option == '5')
+            {
+                system("cls");
+                int idToRemove;
+                int i=0;
+                cout << "Podaj ID do usuniecia: ";
+                cin >> idToRemove;
+                while(contacts[i].id != idToRemove) i++;
+
+                cout << "Id:                     " << contacts[i].id << endl;
+                cout << "Imie:                   " << contacts[i].name << endl;
+                cout << "Nazwisko:               " << contacts[i].lastName << endl;
+                cout << "Numer telefonu:         " << contacts[i].phoneNum << endl;
+                cout << "Email:                  " << contacts[i].email << endl;
+                cout << "Adres:                  " << contacts[i].homeAdress << endl << endl;
+                cout << "Czy usunac kontakt? Y/N" << endl;
+                char option;
+                i=0;
+                cin >> option;
+                if(option=='y' || option=='Y') removeContact(contacts, idToRemove);
+
+                cout << "Kontakt usuniety" << endl;
+                Sleep(1000);
+                system("cls");
+                printAllContacts(contacts);
+                cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
+
+                system("pause");
+            }
+
+            if (option == '6')
+            {
+                system("cls");
+                int idToModify;
+                cout << "Podaj ID do edycji: ";
+                cin >> idToModify;
+                modifyContact(contacts, idToModify);
+                Sleep(1000);
+                system("cls");
+                printAllContacts(contacts);
+                cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
+
+                system("pause");
+            }
+
+            if(option == '7')
+            {
+                changePassword(users,loggedId);
+            }
+            if(option=='8')
+            {
+                loggedId=0;
+            }
+
+            if (option == '9')
+
             {
                 exit(0);
             }
@@ -454,7 +591,160 @@ void changePassword(vector<User> &users,int loggedUserId)
             Sleep(1500);
         }
     }
+
+    file.close();
+
+
 }
+char getCharFromUser()
+{
+    char userInput;
+    cin >> userInput;
+    cin.ignore();
+    return userInput;
+}
+
+string getStringFromUser()
+{
+
+    string userInput;
+    cin >> userInput;
+    return userInput;
+}
+
+int loginMenuAndApp(vector<User>&users)
+{
+
+
+    int loggedUserId=0;
+
+    char option;
+
+    while(1)
+    {
+        if(loggedUserId == 0)
+        {
+            system("cls");
+            cout << "1. Rejestracja"<<endl;
+            cout << "2. Logowanie"<<endl;
+            cout << "9. Zakoncz program"<<endl;
+            option = getCharFromUser();
+            if(option=='1')
+            {
+                registerNewUser(users);
+
+            }
+            else if(option =='2')
+            {
+                loggedUserId= loginExistingUser(users);
+                return loggedUserId;
+
+            }
+            else if(option=='9')
+            {
+                exit(0);
+            }
+        }
+
+    }
+    return loggedUserId;
+}
+void registerNewUser(vector<User>&users)
+{
+    User user;
+    string name,password;
+    cout << "Podaj nazwe uzytkownika: ";
+    name=getStringFromUser();
+    int i =0;
+    int j=0;
+    while(i<users.size())
+    {
+        if(users[i].name == name)
+        {
+            cout << "Taki uzytkownik juz istnieje. Podaj inna nazwe uzytkownika: ";
+            name=getStringFromUser();
+            i=0;
+        }
+        else
+        {
+            i++;
+        }
+    }
+    cout << "Podaj haslo: ";
+    password=getStringFromUser();
+    cout << "Wpisz ponownie haslo: ";
+    string temp =getStringFromUser();
+    while(password != temp)
+    {
+        cout << "Hasla do siebie nie pasuja. Sprobuj ponownie. ";
+        cout << "Podaj haslo: ";
+        password=getStringFromUser();
+        cout << "Wpisz ponownie haslo: ";
+        string temp =getStringFromUser();
+    }
+    cin.sync();
+    if(password == temp)
+    {
+        user.id = users.size()+1;
+        user.name = name;
+        user.password = password;
+        users.push_back(user);
+        cout << "Konto zalozone" << endl;
+
+
+        Sleep(1000);
+    }
+
+}
+int loginExistingUser(vector<User>users)
+{
+    string name,password;
+    cout << "Podaj nazwe: ";
+    name=getStringFromUser();
+    int i =0;
+    while(i<users.size())
+    {
+        if(users[i].name == name)
+        {
+            for(int incorrectPasswordCount =0; incorrectPasswordCount<3; incorrectPasswordCount++)
+            {
+                cout << "Podaj haslo. Pozostalo prob "<< 3-incorrectPasswordCount << endl ;
+                password=getStringFromUser();
+                if(users[i].password == password)
+                {
+                    cout << "Zalogowales sie." << endl;
+                    Sleep(1000);
+                    return users[i].id;
+                }
+            }
+            cout << "Podales 3 razy bledne haslo. Poczekaj 3 sekundy przed kolejna proba"<< endl;
+            Sleep(3000);
+            return 0;
+        }
+        i++;
+    }
+    cout << "Nie ma takiego uzytkownika." <<endl;;
+    Sleep(1500);
+    return users[i].id;
+}
+
+void changePassword(vector<User> &users,int loggedUserId)
+{
+
+    string password;
+    cout << "Podaj nowe haslo: ";
+    password=getStringFromUser();
+    for(int i=0; i<users.size(); i++)
+    {
+        if(users[i].id == loggedUserId)
+        {
+            users[i].password = password;
+            cout << "Haslo zostalo zmienione." <<endl;
+            Sleep(1500);
+        }
+    }
+}
+
 
 
 void modifyContact(vector<Contact> &contacts, int idToModify)
@@ -666,7 +956,8 @@ void searchByName(vector<Contact> contacts, string nameToFind)
     }
 }
 
-void addNewContact(vector<Contact> &contacts, int loggedId)
+
+void addNewContact(vector<Contact> &contacts)
 {
     cin.sync();
 
@@ -710,7 +1001,7 @@ void addNewContact(vector<Contact> &contacts, int loggedId)
         Sleep(1000);
         system("cls");
         cout << "Kontakt dodany.";
-        Sleep(2000);
+        Sleep(1000);
         /*  SPRAWDZANIE CZY KONTAKT ISTNIEJE I EWENTUALNA AKTUALIZACJA - TODO
         */
     }
