@@ -5,7 +5,7 @@
 #include <conio.h>
 #include <vector>
 #include <cstdio>
-
+#include <filesystem>
 int numOfContacts;
 
 using namespace std;
@@ -31,12 +31,12 @@ void addNewContact(vector<Contact> &contacts, int loggedId);
 void loadFile(vector<Contact> &contacts, int loggedId);
 void printAllContacts(vector<Contact> contacts, int loggedId);
 void searchByName(vector<Contact> contacts);
-void application();
 int searchMenu();
 void searchByLastName(vector<Contact> contacts, string lastNameToFind);
 void searchByName(vector<Contact> contacts, string nameToFind);
 void removeContact(vector<Contact> &contacts, int idToRemove);
-void updateFile(vector<Contact> &contacts);
+void updateFile(vector<Contact> &contacts, int idToProcess);
+void updateFileAfterRemovingContact(vector<Contact> &contacts, int idToProcess);
 void modifyContact(vector<Contact> &contacts, int idToModify);
 int loginMenuAndApp(vector<User>&users);
 void registerNewUser(vector<User>&users);
@@ -44,6 +44,10 @@ int loginExistingUser(vector <User>users);
 void changePassword(vector<User>&users, int loggedUserId);
 void loadUserlist(vector<User>&users);
 void printAllUsers(vector<User>users);
+int checkUserIdFromFile(vector<Contact>contacts, string line);
+int checkContactIdFromFile(vector<Contact>contacts, string line);
+int findLastUsedIdFromFile(vector<Contact>contacts);
+
 int main()
 {
     int loggedId=0;
@@ -356,7 +360,7 @@ void registerNewUser(vector<User>&users)
     {
         if(users[i].name == name)
         {
-            cout << "Taki uzytkownik juz istnieje. Podaj inna nazwe uzytkownika: ";
+            cerr << "Taki uzytkownik juz istnieje. Podaj inna nazwe uzytkownika: ";
             name=getStringFromUser();
             i=0;
         }
@@ -380,7 +384,7 @@ void registerNewUser(vector<User>&users)
     cin.sync();
     if(password == temp)
     {
-        user.id = users.size()+1;
+        user.id = users.back().id+1;
         user.name = name;
         user.password = password;
         users.push_back(user);
@@ -453,7 +457,6 @@ void changePassword(vector<User> &users,int loggedUserId)
 }
 
 
-/*DOPISAC SPRAWDZANIE CZY DANY KONTAKT NALEZY DO ZALOGOWANEGO UZYTKOWNIKA ( BY UNIKNAC SYTUACJI ZE UZYTKOWNIK PODEJZY LUB ZEDYTUJE NIE SWOJ KONTAKT*/
 void modifyContact(vector<Contact> &contacts, int idToModify)
 {
     int i = 0;
@@ -518,9 +521,8 @@ void modifyContact(vector<Contact> &contacts, int idToModify)
     cout << "Adres:                  " << contacts[i].homeAdress << endl << endl;
     system("pause");
 
-    updateFile(contacts);
+    updateFile(contacts, idToModify);
 }
-/*DOPISAC SPRAWDZANIE CZY DANY KONTAKT NALEZY DO ZALOGOWANEGO UZYTKOWNIKA ( BY UNIKNAC SYTUACJI ZE UZYTKOWNIK PODEJZY LUB USUNIE NIE SWOJ KONTAKT*/
 
 void removeContact(vector<Contact> &contacts, int idToRemove)
 {
@@ -531,33 +533,86 @@ void removeContact(vector<Contact> &contacts, int idToRemove)
     }
 
     contacts.erase(contacts.begin() + i);
-    updateFile(contacts);
+    updateFileAfterRemovingContact(contacts,idToRemove);
 }
 
-void updateFile(vector<Contact> &contacts)
+void updateFile(vector<Contact> &contacts, int idToProcess)
 {
+
+
     fstream file;
-    file.open("kontakty.txt", ios::out);
+    fstream tempFile;
+    string line="";
+    int idFromFile;
+    file.open("kontakty.txt", ios::in);
+    tempFile.open("kontakty_temp.txt",ios::out);
     if (file.good() == true)
     {
-        for (const auto &contact : contacts)
+        while(getline(file,line))
         {
-            file << contact.id << "|"
-                 << contact.belongsTo << "|"
-                 << contact.name << "|"
-                 << contact.lastName << "|"
-                 << contact.phoneNum << "|"
-                 << contact.email << "|"
-                 << contact.homeAdress << "|" << endl;
+            int i=0;
+            idFromFile=checkContactIdFromFile(contacts,line);
+            if(idToProcess!=idFromFile)
+            {
+                tempFile << line << endl;
+
+            } else
+                {
+
+            while(contacts[i].id!=idToProcess) i++;
+
+                tempFile << contacts[i].id << "|"
+                         << contacts[i].belongsTo << "|"
+                         << contacts[i].name << "|"
+                         << contacts[i].lastName << "|"
+                         << contacts[i].phoneNum << "|"
+                         << contacts[i].email << "|"
+                         << contacts[i].homeAdress << "|" << endl;
+
+                }
         }
+
     }
     else
     {
-        cout << "Nie mozna uzyskac dostepu do pliku.";
+        cerr << "Nie mozna uzyskac dostepu do pliku.";
     }
     file.close();
+    remove("kontakty.txt");
+    tempFile.close();
+    rename("kontakty_temp.txt", "kontakty.txt");
 }
+void updateFileAfterRemovingContact(vector<Contact> &contacts, int idToProcess)
+{
+    fstream file;
+    fstream tempFile;
+    string line="";
+    int idFromFile;
+    file.open("kontakty.txt", ios::in);
+    tempFile.open("kontakty_temp.txt",ios::out);
+    if (file.good() == true)
+    {
+        while(getline(file,line))
+        {
+            int i=0;
+            idFromFile=checkContactIdFromFile(contacts,line);
+            if(idToProcess!=idFromFile)
+            {
+                tempFile << line << endl;
 
+            }
+        }
+
+    }
+    else
+    {
+        cerr << "Nie mozna uzyskac dostepu do pliku.";
+    }
+    file.close();
+    remove("kontakty.txt");
+    tempFile.close();
+    rename("kontakty_temp.txt", "kontakty.txt");
+}
 int searchMenu()
 {
     char option;
@@ -620,11 +675,12 @@ void addNewContact(vector<Contact> &contacts, int loggedId)
     string line;
     string option = "";
     Contact contact;
+    int lastFoundId = findLastUsedIdFromFile(contacts);
     int position = 0;
     file.open("kontakty.txt", ios::out | ios::app);
     if (file.good() == true)
     {
-        contact.id = contacts.back().id + 1;
+        contact.id = lastFoundId+1;
         contact.belongsTo = contact.id;
         file << contact.id << "|";
         file << loggedId << "|";
@@ -700,11 +756,43 @@ int checkUserIdFromFile(vector<Contact>contacts, string line)
             }
 
 }
+int checkContactIdFromFile(vector<Contact>contacts, string line)
+{
+    fstream file;
+    file.open("kontakty.txt", ios::in);
+    Contact contact;
+    string temp;
+    int idFromFile;
+    char separator = '|';
+    int repsOfSeparator = 0;
+
+    for (size_t i = 0; i < line.length(); i++)
+            {
+                if (line[i] != separator)
+                {
+
+                    while (repsOfSeparator == 0 && line[i] != separator && isdigit(line[i]))
+                    {
+                        /* ZCZYTAJ ID KONTAKTU*/
+                        temp += line[i];
+
+                        i++;
+                        if (line[i] == separator)
+                        {
+                            i++;
+                            idFromFile = stoi(temp);
+                            return idFromFile;
+                        }
+                    }
+                } else
+                {
+                    break;
+                }
+            }
+
+}
 void loadFile(vector<Contact> &contacts, int loggedId)
 {
-
-    /* DOPISANA ZMIANA ZEBY RESZTE LINII WCZYTYWALO TYLKO JESLI ID ZALOGOWANEGO UZYTKOWNIKA ZGADZA SIE Z ID W PLIKU */
-    /* POPRAWIC FUNKCJE GLOWNA ZEBY NAJPIERW BYLO LOGOWANIE A POTEM DOPIERO LADOWANIE PLIKU */
 
     fstream file;
     file.open("kontakty.txt", ios::in);
@@ -851,3 +939,18 @@ void printAllContacts(vector<Contact> contacts, int loggedId)
 
 }
 
+int findLastUsedIdFromFile(vector<Contact>contacts)
+{
+    fstream file;
+    file.open("kontakty.txt", ios::in);
+    string line="";
+    int lastUsedId;
+    int linesInFile;
+
+    while(getline(file,line))
+    {
+        lastUsedId=checkContactIdFromFile(contacts,line);
+    }
+    file.close();
+return lastUsedId;
+}
