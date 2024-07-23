@@ -13,7 +13,7 @@ using namespace std;
 struct Contact
 {
     int id;
-    int belongsTo; // ID uzytkownika do którego nalezy kontakt
+    int belongsTo; // ID uzytkownika do ktÃ³rego nalezy kontakt
     string name, lastName, phoneNum, email, homeAdress;
 };
 
