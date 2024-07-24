@@ -34,10 +34,10 @@ void searchByName(vector<Contact> contacts);
 int searchMenu();
 void searchByLastName(vector<Contact> contacts, string lastNameToFind);
 void searchByName(vector<Contact> contacts, string nameToFind);
-void removeContact(vector<Contact> &contacts, int idToRemove);
+void removeContact(vector<Contact> &contacts, int idToRemove, int loggedId);
 void updateFile(vector<Contact> &contacts, int idToProcess);
 void updateFileAfterRemovingContact(vector<Contact> &contacts, int idToProcess);
-void modifyContact(vector<Contact> &contacts, int idToModify);
+void modifyContact(vector<Contact> &contacts, int idToModify, int loggedId);
 int loginMenuAndApp(vector<User>&users);
 void registerNewUser(vector<User>&users);
 int loginExistingUser(vector <User>users);
@@ -52,168 +52,140 @@ int main()
 {
     int loggedId=0;
     vector<User> users;
-         char option;
-    fstream file;
-    Contact contact;
+    char option;
     vector<Contact> contacts;
     bool filePreviouslyLoaded=false;
     loadUserlist(users);
     string nameToFind, lastNameToFind;
     while(1)
     {
-           loggedId=loginMenuAndApp(users);
-           if(option!='9')
-           {
-
-
-    while (loggedId!=0)
-    {
-        if(filePreviouslyLoaded==false)
+        loggedId=loginMenuAndApp(users);
+        if(option!='9')
         {
-            loadFile(contacts, loggedId);
-            filePreviouslyLoaded = true;
+
+
+
+            while (loggedId!=0)
+            {
+                if(filePreviouslyLoaded==false)
+                {
+                    loadFile(contacts, loggedId);
+                    filePreviouslyLoaded = true;
+                }
+
+                system("cls");
+                cout << " ________________________________" << endl;
+                cout << "|" << "    >>> KSIAZKA ADRESOWA <<<"
+                     << "    |" << endl;
+                cout << "|" << " 1. Dodaj nowa osobe."
+                     << "           |" << endl;
+                cout << "| 2. Wyszukaj po imieniu."
+                     << "        |" << endl;
+                cout << "| 3. Wyszukaj po nazwisku."
+                     << "       |" << endl;
+                cout << "| 4. Wyswietl wszystkie kontakty."
+                     << "|"
+                     << endl;
+                cout << "| 5. Usun adresata.              |" << endl;
+                cout << "| 6. Edytuj adresata.            |" << endl;
+                cout << "| 7. Zmien haslo.                |" <<endl;
+                cout << "| 8. Wyloguj sie.                |" <<endl;
+                cout << "| 9. Zamknij program."
+                     << "            |" << endl;
+                cout << "|________________________________|" << endl;
+
+                cin >> option;
+                cin.sync();
+
+                if (option == '1')
+                {
+                    addNewContact(contacts, loggedId);
+
+                    Sleep(1000);
+                    system("cls");
+                    cout << "Kontakt dodany.";
+                    Sleep(2000);
+                }
+
+                if (option == '2')
+                {
+                    system("cls");
+                    cout << "Wpisz szukane imie: ";
+                    cin >> nameToFind;
+                    cout << endl;
+                    searchByName(contacts, nameToFind);
+                    searchMenu();
+                }
+
+                if (option == '3')
+                {
+                    system("cls");
+                    cout << "Wpisz szukane nazwisko: ";
+                    cin >> lastNameToFind;
+                    cout << endl;
+                    searchByLastName(contacts, lastNameToFind);
+                    searchMenu();
+                }
+
+                if (option == '4')
+                {
+                    system("cls");
+                    printAllContacts(contacts, loggedId);
+                    cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz" <<endl;
+
+                    system("pause");
+                }
+
+                if (option == '5')
+                {
+                    system("cls");
+                    int idToRemove;
+                    cout << "Podaj ID do usuniecia: ";
+                    cin >> idToRemove;
+                    removeContact(contacts, idToRemove, loggedId);
+                }
+
+                if (option == '6')
+                {
+                    system("cls");
+                    int idToModify;
+                    cout << "Podaj ID do edycji: ";
+                    cin >> idToModify;
+                    modifyContact(contacts, idToModify, loggedId);
+
+                }
+
+                if(option == '7')
+                {
+                    changePassword(users,loggedId);
+                }
+                if(option=='8')
+                {
+                    loggedId=0;
+                    filePreviouslyLoaded = false;
+                    contacts.clear();
+                    break;
+                }
+
+                if (option == '9')
+                {
+                    exit(0);
+                }
+                if (option =='O')
+                {
+                    printAllUsers(users);
+                    system("pause");
+                }
+
+            }
         }
-
-        system("cls");
-        cout << " ________________________________" << endl;
-        cout << "|" << "    >>> KSIAZKA ADRESOWA <<<"
-             << "    |" << endl;
-        cout << "|" << " 1. Dodaj nowa osobe."
-             << "           |" << endl;
-        cout << "| 2. Wyszukaj po imieniu."
-             << "        |" << endl;
-        cout << "| 3. Wyszukaj po nazwisku."
-             << "       |" << endl;
-        cout << "| 4. Wyswietl wszystkie kontakty."
-             << "|"
-             << endl;
-        cout << "| 5. Usun adresata.              |" << endl;
-        cout << "| 6. Edytuj adresata.            |" << endl;
-        cout << "| 7. Zmien haslo.                |" <<endl;
-        cout << "| 8. Wyloguj sie.                |" <<endl;
-        cout << "| 9. Zamknij program."
-             << "            |" << endl;
-        cout << "|________________________________|" << endl;
-
-        cin >> option;
-        cin.sync();
-
-        if (option == '1')
-        {
-            addNewContact(contacts, loggedId);
-
-            Sleep(1000);
-            system("cls");
-            cout << "Kontakt dodany.";
-            Sleep(2000);
-        }
-
-        if (option == '2')
-        {
-            system("cls");
-            cout << "Wpisz szukane imie: ";
-            cin >> nameToFind;
-            cout << endl;
-            searchByName(contacts, nameToFind);
-            searchMenu();
-        }
-
-        if (option == '3')
-        {
-            system("cls");
-            cout << "Wpisz szukane nazwisko: ";
-            cin >> lastNameToFind;
-            cout << endl;
-            searchByLastName(contacts, lastNameToFind);
-            searchMenu();
-        }
-
-        if (option == '4')
-        {
-            system("cls");
-            printAllContacts(contacts, loggedId);
-            cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz" <<endl;
-
-            system("pause");
-        }
-
-        if (option == '5')
-        {
-            system("cls");
-            int idToRemove;
-            int i=0;
-            cout << "Podaj ID do usuniecia: ";
-            cin >> idToRemove;
-            while(contacts[i].id != idToRemove) i++;
-
-            cout << "Id:                     " << contacts[i].id << endl;
-            cout << "Imie:                   " << contacts[i].name << endl;
-            cout << "Nazwisko:               " << contacts[i].lastName << endl;
-            cout << "Numer telefonu:         " << contacts[i].phoneNum << endl;
-            cout << "Email:                  " << contacts[i].email << endl;
-            cout << "Adres:                  " << contacts[i].homeAdress << endl << endl;
-            cout << "Czy usunac kontakt? Y/N" << endl;
-            char option;
-            i=0;
-            cin >> option;
-            if(option=='y' || option=='Y') removeContact(contacts, idToRemove);
-
-            cout << "Kontakt usuniety" << endl;
-            Sleep(1000);
-            system("cls");
-            printAllContacts(contacts, loggedId);
-            cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
-
-            system("pause");
-        }
-
-        if (option == '6')
-        {
-            system("cls");
-            int idToModify;
-            cout << "Podaj ID do edycji: ";
-            cin >> idToModify;
-            modifyContact(contacts, idToModify);
-            Sleep(1000);
-            system("cls");
-            printAllContacts(contacts, loggedId);
-            cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
-
-            system("pause");
-        }
-
-        if(option == '7')
-        {
-            changePassword(users,loggedId);
-        }
-        if(option=='8')
-        {
-            loggedId=0;
-            filePreviouslyLoaded = false;
-            contacts.clear();
-            break;
-        }
-
-        if (option == '9')
-        {
-            exit(0);
-        }
-        if (option =='O')
-        {
-            printAllUsers(users);
-            system("pause");
-        }
-
     }
-    }
-    }
-    file.close();
 
 }
 
 void loadUserlist(vector<User>&users)
 {
-fstream file;
+    fstream file;
     file.open("users.txt", ios::in);
     User user;
     string line = "";
@@ -229,50 +201,50 @@ fstream file;
             {
                 if (line[i] != separator)
                 {
-                        while (repsOfSeparator == 0 && isdigit(line[i]) && line[i] != separator)
+                    while (repsOfSeparator == 0 && isdigit(line[i]) && line[i] != separator)
+                    {
+                        /* ZCZYTAJ ID*/
+                        temp += line[i];
+                        i++;
+                        if (line[i] == separator)
                         {
-                            /* ZCZYTAJ ID*/
-                            temp += line[i];
+                            int id = stoi(temp);
+                            user.id = id;
+                            repsOfSeparator++;
                             i++;
-                            if (line[i] == separator)
-                            {
-                                int id = stoi(temp);
-                                user.id = id;
-                                repsOfSeparator++;
-                                i++;
-                            }
                         }
-                        temp="";
-                        while (repsOfSeparator == 1 && line[i] != separator)
+                    }
+                    temp="";
+                    while (repsOfSeparator == 1 && line[i] != separator)
+                    {
+                        /* ZCZYTAJ LOGIN*/
+                        temp += line[i];
+                        i++;
+                        if (line[i] == separator)
                         {
-                            /* ZCZYTAJ LOGIN*/
-                            temp += line[i];
+                            user.name = temp;
+                            repsOfSeparator++;
                             i++;
-                            if (line[i] == separator)
-                            {
-                                user.name = temp;
-                                repsOfSeparator++;
-                                i++;
-                            }
                         }
-                        temp = "";
-                        while (repsOfSeparator == 2 && line[i] != separator)
+                    }
+                    temp = "";
+                    while (repsOfSeparator == 2 && line[i] != separator)
+                    {
+                        /* ZCZYTAJ HASLO*/
+                        temp += line[i];
+
+                        i++;
+                        if (line[i] == separator)
                         {
-                            /* ZCZYTAJ HASLO*/
-                            temp += line[i];
-
+                            user.password = temp;
+                            repsOfSeparator++;
                             i++;
-                            if (line[i] == separator)
-                            {
-                                user.password = temp;
-                                repsOfSeparator++;
-                                i++;
-                            }
                         }
+                    }
 
 
-                        temp = "";
-                        users.push_back(user);
+                    temp = "";
+                    users.push_back(user);
 
                 }
             }
@@ -286,12 +258,12 @@ fstream file;
 
 void printAllUsers(vector<User>users)
 {
-     for (int i = 0; i < users.size(); i++)
+    for (size_t i = 0; i < users.size(); i++)
     {
-       cout << "Id:                     " << users[i].id << endl;
+        cout << "Id:                     " << users[i].id << endl;
         cout << "Imie:                   " << users[i].name << endl<<endl;
 
-        }
+    }
 }
 
 char getCharFromUser()
@@ -355,7 +327,7 @@ void registerNewUser(vector<User>&users)
     string name,password;
     cout << "Podaj nazwe uzytkownika: ";
     name=getStringFromUser();
-    int i =0;
+    size_t i =0;
     while(i<users.size())
     {
         if(users[i].name == name)
@@ -384,7 +356,12 @@ void registerNewUser(vector<User>&users)
     cin.sync();
     if(password == temp)
     {
-        user.id = users.back().id+1;
+        if(users.size()!=0)
+        {
+            user.id = users.back().id+1;
+        }
+        else user.id = 1;
+
         user.name = name;
         user.password = password;
         users.push_back(user);
@@ -410,7 +387,7 @@ int loginExistingUser(vector<User>users)
     string name,password;
     cout << "Podaj nazwe: ";
     name=getStringFromUser();
-    int i =0;
+    size_t i =0;
     bool userFound=false;
     while(i<users.size())
     {
@@ -445,7 +422,7 @@ void changePassword(vector<User> &users,int loggedUserId)
     string password;
     cout << "Podaj nowe haslo: ";
     password=getStringFromUser();
-    for(int i=0; i<users.size(); i++)
+    for(size_t i=0; i<users.size(); i++)
     {
         if(users[i].id == loggedUserId)
         {
@@ -457,7 +434,7 @@ void changePassword(vector<User> &users,int loggedUserId)
 }
 
 
-void modifyContact(vector<Contact> &contacts, int idToModify)
+void modifyContact(vector<Contact> &contacts, int idToModify, int loggedId)
 {
     int i = 0;
     string temp = "";
@@ -509,6 +486,8 @@ void modifyContact(vector<Contact> &contacts, int idToModify)
     case '0':
         Sleep(500);
         break;
+
+
     }
 
     cout << "Kontakt zmieniony" << endl;
@@ -522,18 +501,43 @@ void modifyContact(vector<Contact> &contacts, int idToModify)
     system("pause");
 
     updateFile(contacts, idToModify);
+
+    Sleep(1000);
+    system("cls");
+    printAllContacts(contacts, loggedId);
+    cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
+
+    system("pause");
 }
 
-void removeContact(vector<Contact> &contacts, int idToRemove)
+void removeContact(vector<Contact> &contacts, int idToRemove, int loggedId)
 {
-    int i = 0;
-    while (contacts[i].id != idToRemove)
+    int i=0;
+    while(contacts[i].id != idToRemove) i++;
+
+    cout << "Id:                     " << contacts[i].id << endl;
+    cout << "Imie:                   " << contacts[i].name << endl;
+    cout << "Nazwisko:               " << contacts[i].lastName << endl;
+    cout << "Numer telefonu:         " << contacts[i].phoneNum << endl;
+    cout << "Email:                  " << contacts[i].email << endl;
+    cout << "Adres:                  " << contacts[i].homeAdress << endl << endl;
+    cout << "Czy usunac kontakt? Y/N" << endl;
+    char option;
+    cin >> option;
+    if(tolower(option)=='y')
     {
-        i++;
+
+        contacts.erase(contacts.begin() + i);
+        updateFileAfterRemovingContact(contacts,idToRemove);
     }
 
-    contacts.erase(contacts.begin() + i);
-    updateFileAfterRemovingContact(contacts,idToRemove);
+    cout << "Kontakt usuniety" << endl;
+    Sleep(1000);
+    system("cls");
+    printAllContacts(contacts, loggedId);
+    cout << "Powrot do poprzedniego menu - wcisnij jakikolwiek klawisz"<<endl;
+
+    system("pause");
 }
 
 void updateFile(vector<Contact> &contacts, int idToProcess)
@@ -556,10 +560,11 @@ void updateFile(vector<Contact> &contacts, int idToProcess)
             {
                 tempFile << line << endl;
 
-            } else
-                {
+            }
+            else
+            {
 
-            while(contacts[i].id!=idToProcess) i++;
+                while(contacts[i].id!=idToProcess) i++;
 
                 tempFile << contacts[i].id << "|"
                          << contacts[i].belongsTo << "|"
@@ -569,7 +574,7 @@ void updateFile(vector<Contact> &contacts, int idToProcess)
                          << contacts[i].email << "|"
                          << contacts[i].homeAdress << "|" << endl;
 
-                }
+            }
         }
 
     }
@@ -594,7 +599,6 @@ void updateFileAfterRemovingContact(vector<Contact> &contacts, int idToProcess)
     {
         while(getline(file,line))
         {
-            int i=0;
             idFromFile=checkContactIdFromFile(contacts,line);
             if(idToProcess!=idFromFile)
             {
@@ -726,34 +730,35 @@ int checkUserIdFromFile(vector<Contact>contacts, string line)
     int repsOfSeparator = 0;
 
     for (size_t i = 0; i < line.length(); i++)
+    {
+        if (line[i] != separator)
+        {
+            while (repsOfSeparator != 1 && line[i] != separator)
             {
-                if (line[i] != separator)
+                i++;
+                if(line[i] == separator) repsOfSeparator++;
+
+            }
+
+            while (repsOfSeparator == 1 && line[i] != separator && isdigit(line[i]))
+            {
+                /* ZCZYTAJ ID UZYTKOWNIKA*/
+                temp += line[i];
+
+                i++;
+                if (line[i] == separator)
                 {
-                    while (repsOfSeparator != 1 && line[i] != separator)
-                    {
-                        i++;
-                        if(line[i] == separator) repsOfSeparator++;
-
-                    }
-
-                    while (repsOfSeparator == 1 && line[i] != separator && isdigit(line[i]))
-                    {
-                        /* ZCZYTAJ ID UZYTKOWNIKA*/
-                        temp += line[i];
-
-                        i++;
-                        if (line[i] == separator)
-                        {
-                            i++;
-                            idFromFile = stoi(temp);
-                            return idFromFile;
-                        }
-                    }
-                } else
-                {
-                    repsOfSeparator++;
+                    i++;
+                    idFromFile = stoi(temp);
+                    return idFromFile;
                 }
             }
+        }
+        else
+        {
+            repsOfSeparator++;
+        }
+    }
 
 }
 int checkContactIdFromFile(vector<Contact>contacts, string line)
@@ -767,28 +772,29 @@ int checkContactIdFromFile(vector<Contact>contacts, string line)
     int repsOfSeparator = 0;
 
     for (size_t i = 0; i < line.length(); i++)
+    {
+        if (line[i] != separator)
+        {
+
+            while (repsOfSeparator == 0 && line[i] != separator && isdigit(line[i]))
             {
-                if (line[i] != separator)
-                {
+                /* ZCZYTAJ ID KONTAKTU*/
+                temp += line[i];
 
-                    while (repsOfSeparator == 0 && line[i] != separator && isdigit(line[i]))
-                    {
-                        /* ZCZYTAJ ID KONTAKTU*/
-                        temp += line[i];
-
-                        i++;
-                        if (line[i] == separator)
-                        {
-                            i++;
-                            idFromFile = stoi(temp);
-                            return idFromFile;
-                        }
-                    }
-                } else
+                i++;
+                if (line[i] == separator)
                 {
-                    break;
+                    i++;
+                    idFromFile = stoi(temp);
+                    return idFromFile;
                 }
             }
+        }
+        else
+        {
+            break;
+        }
+    }
 
 }
 void loadFile(vector<Contact> &contacts, int loggedId)
@@ -809,12 +815,12 @@ void loadFile(vector<Contact> &contacts, int loggedId)
             belongsTo=checkUserIdFromFile(contacts, line);
             if(loggedId==belongsTo)
             {
-            temp = "";
-            repsOfSeparator=0;
-            for (size_t i = 0; i < line.length(); i++)
-            {
-                if (line[i] != separator)
+                temp = "";
+                repsOfSeparator=0;
+                for (size_t i = 0; i < line.length(); i++)
                 {
+                    if (line[i] != separator)
+                    {
                         while (repsOfSeparator == 0 && isdigit(line[i]) && line[i] != separator)
                         {
                             /* ZCZYTAJ ID*/
@@ -831,7 +837,7 @@ void loadFile(vector<Contact> &contacts, int loggedId)
                         temp = "";
                         while (repsOfSeparator == 1 && line[i] != separator)
                         {
-                           /* ZCZYTAJ DO KOGO NALEZY KONTAKT*/
+                            /* ZCZYTAJ DO KOGO NALEZY KONTAKT*/
                             temp += line[i];
                             i++;
                             if (line[i] == separator)
@@ -910,8 +916,8 @@ void loadFile(vector<Contact> &contacts, int loggedId)
                         temp = "";
                         contacts.push_back(contact);
 
+                    }
                 }
-            }
 
             }
             repsOfSeparator = 0;
@@ -926,16 +932,16 @@ void printAllContacts(vector<Contact> contacts, int loggedId)
     int numOfContacts = contacts.size();
     for (int i = 0; i < numOfContacts; i++)
     {
-       // if(loggedId==contacts[i].belongsTo)
-           // {
-       cout << "Id:                     " << contacts[i].id << endl;
+        // if(loggedId==contacts[i].belongsTo)
+        // {
+        cout << "Id:                     " << contacts[i].id << endl;
         cout << "Imie:                   " << contacts[i].name << endl;
         cout << "Nazwisko:               " << contacts[i].lastName << endl;
         cout << "Numer telefonu:         " << contacts[i].phoneNum << endl;
         cout << "Email:                  " << contacts[i].email << endl;
         cout << "Adres:                  " << contacts[i].homeAdress << endl << endl;
-           // }
-        }
+        // }
+    }
 
 }
 
@@ -945,12 +951,11 @@ int findLastUsedIdFromFile(vector<Contact>contacts)
     file.open("kontakty.txt", ios::in);
     string line="";
     int lastUsedId;
-    int linesInFile;
 
     while(getline(file,line))
     {
         lastUsedId=checkContactIdFromFile(contacts,line);
     }
     file.close();
-return lastUsedId;
+    return lastUsedId;
 }
